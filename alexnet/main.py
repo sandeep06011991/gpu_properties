@@ -5,6 +5,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import numpy as np
+from preprocessor import BatchPreprocessor
 
 # Access CIFAR10 data
 def unpickle(file):
@@ -29,9 +30,18 @@ def view_image(datadict):
 
 def train():
     a = unpickle("../cifar-10-batches-py/data_batch_1")
+    for i in a.keys():
+        print(i)
+    print(len(a["labels"]))
+    print((a["data"]).shape)
 
-
-if __name__== "__main__":
+if __name__=="__main__":
     print("hello world")
-    train()
+    from finetune import main
+    import tensorflow as tf
+    tf.app.run()
+    # bp  = BatchPreprocessor("../cifar-10-batches-py/",10, output_size=[227, 227],
+    #                         horizontal_flip=False, shuffle=False,
+    #              mean_color=[132.2766, 139.6506, 146.9702], multi_scale=None)
+    # bp.next_batch(128)
     pass

@@ -4,7 +4,7 @@ Derived from: https://github.com/kratzert/finetune_alexnet_with_tensorflow/
 import tensorflow as tf
 import numpy as np
 
-
+" AlexNet Reference "
 class AlexNetModel(object):
 
     def __init__(self, num_classes=1000, dropout_keep_prob=0.5):
@@ -53,21 +53,17 @@ class AlexNetModel(object):
         return self.loss
 
     def optimize(self, learning_rate, train_layers=[]):
-        var_list = [v for v in tf.trainable_variables() if v.name.split('/')[0] in train_layers]
-        return tf.train.AdamOptimizer(learning_rate).minimize(self.loss, var_list=var_list)
+        # var_list = [v for v in tf.trainable_variables() if v.name.split('/')[0] in train_layers]
+        return tf.train.AdamOptimizer(learning_rate).minimize(self.loss)
+        # ,var_list = tf.trainable_variables)
 
-    def load_original_weights(self, session, skip_layers=[]):
-        weights_dict = np.load('bvlc_alexnet.npy', encoding='bytes').item()
+    def load_original_weights(self, session, npy_file_location):
+        weights_dict = np.load(npy_file_location, encoding='bytes',allow_pickle=True).item()
 
         for op_name in weights_dict:
-            # if op_name in skip_layers:
-            #     continue
-
-            if op_name == 'fc8' and self.num_classes != 1000:
-                continue
-
             with tf.variable_scope(op_name, reuse=True):
                 for data in weights_dict[op_name]:
+                    print(data)
                     if len(data.shape) == 1:
                         var = tf.get_variable('biases')
                         session.run(var.assign(data))
@@ -81,7 +77,8 @@ Helper methods
 """
 def conv(x, filter_height, filter_width, num_filters, stride_y, stride_x, name, padding='SAME', groups=1):
     input_channels = int(x.get_shape()[-1])
-    convolve = lambda i, k: tf.nn.conv2d(i, k, strides=[1, stride_y, stride_x, 1], padding=padding)
+    convolve = lambda i, k: tf.nn.conv2d(i, k, strides=[1, stride_y, stride_x, 1],\
+                                         padding=padding)
 
     with tf.variable_scope(name) as scope:
         weights = tf.get_variable('weights', shape=[filter_height, filter_width, input_channels/groups, num_filters])
@@ -94,8 +91,9 @@ def conv(x, filter_height, filter_width, num_filters, stride_y, stride_x, name, 
             weight_groups = tf.split(axis=3, num_or_size_splits=groups, value=weights)
             output_groups = [convolve(i, k) for i,k in zip(input_groups, weight_groups)]
             conv = tf.concat(axis=3, values=output_groups)
-
-        bias = tf.reshape(tf.nn.bias_add(conv, biases), conv.get_shape().as_list())
+        # print(conv.get_shape().as_list())
+        bias = tf.nn.bias_add(conv,biases)
+        # bias = tf.reshape(tf.nn.bias_add(conv, biases), conv.get_shape().as_list())
         relu = tf.nn.relu(bias, name=scope.name)
         return relu
 

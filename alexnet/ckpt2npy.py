@@ -5,9 +5,10 @@ from model import AlexNetModel
 
 
 # Edit just these
-FILE_PATH = '/Users/dgurkaynak/Projects/marvel-finetuning/training/alexnet_20171125_124517/checkpoint/model_epoch7.ckpt'
-NUM_CLASSES = 26
-OUTPUT_FILE = 'alexnet_20171125_124517_epoch7.npy'
+FILE_PATH = '../training/alexnet_20200709_040258/checkpoint/model_epoch1.ckpt'
+
+NUM_CLASSES = 10
+OUTPUT_FILE = 'alexnet_out.npy'
 
 
 if __name__ == '__main__':

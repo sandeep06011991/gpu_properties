@@ -9,12 +9,13 @@ from preprocessor import BatchPreprocessor
 tf.app.flags.DEFINE_float('learning_rate', 0.0001, 'Learning rate for adam optimizer')
 tf.app.flags.DEFINE_float('dropout_keep_prob', 0.5, 'Dropout keep probability')
 tf.app.flags.DEFINE_integer('num_epochs', 10, 'Number of epochs for training')
-tf.app.flags.DEFINE_integer('num_classes', 26, 'Number of classes')
+tf.app.flags.DEFINE_integer('num_classes', 10, 'Number of classes')
 tf.app.flags.DEFINE_integer('batch_size', 128, 'Batch size')
+# Selective training, disallow.
 tf.app.flags.DEFINE_string('train_layers', 'fc8,fc7', 'Finetuning layers, seperated by commas')
 tf.app.flags.DEFINE_string('multi_scale', '', 'As preprocessing; scale the image randomly between 2 numbers and crop randomly at network\'s input size')
-tf.app.flags.DEFINE_string('training_file', '../data/train.txt', 'Training dataset file')
-tf.app.flags.DEFINE_string('val_file', '../data/val.txt', 'Validation dataset file')
+# tf.app.flags.DEFINE_string('training_file', '../data/train.txt', 'Training dataset file')
+# tf.app.flags.DEFINE_string('val_file', '../data/val.txt', 'Validation dataset file')
 tf.app.flags.DEFINE_string('tensorboard_root_dir', '../training', 'Root directory to put the training logs and weights')
 tf.app.flags.DEFINE_integer('log_step', 10, 'Logging period in terms of iteration')
 
@@ -22,6 +23,7 @@ FLAGS = tf.app.flags.FLAGS
 
 
 def main(_):
+    datapath = "../cifar-10-batches-py/"
     # Create training directories
     now = datetime.datetime.now()
     train_dir_name = now.strftime('alexnet_%Y%m%d_%H%M%S')
@@ -58,7 +60,8 @@ def main(_):
 
     # Model
     train_layers = FLAGS.train_layers.split(',')
-    model = AlexNetModel(num_classes=FLAGS.num_classes, dropout_keep_prob=dropout_keep_prob)
+    model = AlexNetModel(num_classes=FLAGS.num_classes,
+                         dropout_keep_prob=dropout_keep_prob)
     loss = model.loss(x, y)
     train_op = model.optimize(FLAGS.learning_rate, train_layers)
 
@@ -82,9 +85,11 @@ def main(_):
     else:
         multi_scale = None
 
-    train_preprocessor = BatchPreprocessor(dataset_file_path=FLAGS.training_file, num_classes=FLAGS.num_classes,
-                                           output_size=[227, 227], horizontal_flip=True, shuffle=True, multi_scale=multi_scale)
-    val_preprocessor = BatchPreprocessor(dataset_file_path=FLAGS.val_file, num_classes=FLAGS.num_classes, output_size=[227, 227])
+    train_preprocessor = BatchPreprocessor(dataset_file_path=datapath, num_classes=FLAGS.num_classes,
+                                           output_size=[227, 227], horizontal_flip=True, shuffle=True,
+                                           multi_scale=multi_scale,is_training=True)
+    val_preprocessor = BatchPreprocessor(dataset_file_path=datapath, num_classes=FLAGS.num_classes,
+                                         output_size=[227, 227],is_training=False)
 
     # Get the number of training/validation steps per epoch
     train_batches_per_epoch = np.floor(len(train_preprocessor.labels) / FLAGS.batch_size).astype(np.int16)
@@ -96,7 +101,7 @@ def main(_):
         train_writer.add_graph(sess.graph)
 
         # Load the pretrained weights
-        model.load_original_weights(sess, skip_layers=train_layers)
+        # model.load_original_weights(sess, skip_layers=train_layers)
 
         # Directly restore (your model should be exactly the same with checkpoint)
         # saver.restore(sess, "/Users/dgurkaynak/Projects/marvel-training/alexnet64-fc6/model_epoch10.ckpt")
@@ -115,9 +120,12 @@ def main(_):
 
                 # Logging
                 if step % FLAGS.log_step == 0:
-                    s = sess.run(merged_summary, feed_dict={x: batch_xs, y: batch_ys, dropout_keep_prob: 1.})
-                    train_writer.add_summary(s, epoch * train_batches_per_epoch + step)
-
+                    s = sess.run(accuracy, feed_dict={x: batch_xs, y: batch_ys, dropout_keep_prob: 1.})
+                    # train_writer.add_summary(s, epoch * train_batches_per_epoch + step)
+                    # print(s["train_loss"])
+                    # assert(s)
+                    # loss = sess.run(loss,feed_dict={x: batch_xs, y: batch_ys, dropout_keep_prob: 1.})
+                    print("step {}: loss:{} \n".format(step,s))
                 step += 1
 
             # Epoch completed, start validation

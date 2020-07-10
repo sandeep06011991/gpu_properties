@@ -4,11 +4,16 @@ Derived from: https://github.com/kratzert/finetune_alexnet_with_tensorflow/
 import numpy as np
 import cv2
 
+def unpickle(file):
+    import pickle
+    with open(file, 'rb') as fo:
+        dict = pickle.load(fo, encoding='latin1')
+    return dict
 
 class BatchPreprocessor(object):
 
     def __init__(self, dataset_file_path, num_classes, output_size=[227, 227], horizontal_flip=False, shuffle=False,
-                 mean_color=[132.2766, 139.6506, 146.9702], multi_scale=None):
+                 mean_color=[132.2766, 139.6506, 146.9702], multi_scale=None,is_training = True):
         self.num_classes = num_classes
         self.output_size = output_size
         self.horizontal_flip = horizontal_flip
@@ -17,16 +22,31 @@ class BatchPreprocessor(object):
         self.multi_scale = multi_scale
 
         self.pointer = 0
-        self.images = []
+        self.images = np.array([], dtype=np.int64).reshape(0,3072)
         self.labels = []
 
         # Read the dataset file
-        dataset_file = open(dataset_file_path)
-        lines = dataset_file.readlines()
-        for line in lines:
-            items = line.split()
-            self.images.append(items[0])
-            self.labels.append(int(items[1]))
+        no_file_batches = 1
+        if is_training:
+            for i in range(1,no_file_batches+1):
+                file_name = "{}/data_batch_{}".format(dataset_file_path,i)
+                dict = unpickle(file_name)
+                print(dict["data"].shape)
+                self.images = np.vstack([self.images,dict["data"]])
+                self.labels = self.labels + (dict["labels"])
+        else:
+            file_name = "{}/test_batch".format(dataset_file_path)
+            dict = unpickle(file_name)
+            self.images = (dict["data"])
+            self.labels = (dict["labels"])
+        print(self.images.shape)
+        print(len(self.labels))
+        # dataset_file = open(dataset_file_path)
+        # lines = dataset_file.readlines()
+        # for line in lines:
+        #     items = line.split()
+        #     self.images.append(items[0])
+        #     self.labels.append(int(items[1]))
 
         # Shuffle the data
         if self.shuffle:
@@ -60,7 +80,10 @@ class BatchPreprocessor(object):
         # Read images
         images = np.ndarray([batch_size, self.output_size[0], self.output_size[1], 3])
         for i in range(len(paths)):
-            img = cv2.imread(paths[i])
+
+            img = np.reshape(paths[i],((32,32,3))).astype('float32')
+            cv2.resize(img,(227,227))
+            # img = cv2.imread(paths[i])
 
             # Flip image at random if flag is selected
             if self.horizontal_flip and np.random.random() < 0.5:
@@ -70,6 +93,7 @@ class BatchPreprocessor(object):
                 # Resize the image for output
                 img = cv2.resize(img, (self.output_size[0], self.output_size[0]))
                 img = img.astype(np.float32)
+
             elif isinstance(self.multi_scale, list):
                 # Resize to random scale
                 new_size = np.random.randint(self.multi_scale[0], self.multi_scale[1], 1)[0]

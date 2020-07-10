@@ -1,0 +1,7 @@
+venv/
+.idea/
+cifar-10-batches-py/
+*.pyc
+training/
+exp1
+*.npy
