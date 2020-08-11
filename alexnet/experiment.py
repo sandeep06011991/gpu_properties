@@ -17,7 +17,7 @@ For a single model.
 BatchSize | PreprocessingTimePerBatch | ComputeTimePerBatch | TotalTimePerBatch 
 """
 def experiment1(sess,x,y):
-    MAX_BATCH_SIZE = 1000
+    MAX_BATCH_SIZE = 10000
     batch_size=128
     bp  = BatchPreprocessor("../cifar-10-batches-py/",10, output_size=[227, 227],
                             horizontal_flip=False, shuffle=False,
@@ -40,6 +40,7 @@ def experiment1(sess,x,y):
         compute_time = b-a
         fp.write("{} | {} | {} | {} \n".format(batch_size,preprocessing_time,
                                                compute_time, preprocessing_time+compute_time))
+        fp.flush()
         batch_size = batch_size *2
         # if batch_size > len(bp.labels):
         #     break
@@ -59,8 +60,8 @@ def multi_model_setup():
     model_100 = AlexNetModel(num_classes=100, dropout_keep_prob=0.5)
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
-    saver = tf.train.import_meta_graph("../training/alexnet_20200709_040258/checkpoint/model_epoch1.ckpt.meta")
-    saver.restore(sess, "../training/alexnet_20200709_040258/checkpoint/model_epoch1.ckpt")
+    saver = tf.train.import_meta_graph("../training/alexnet_20200709_232305/checkpoint/model_epoch10.ckpt.meta")
+    saver.restore(sess, "../training/alexnet_20200709_232305/checkpoint/model_epoch10.ckpt")
     bp  = BatchPreprocessor("../cifar-10-batches-py/",10, output_size=[227, 227],
                             horizontal_flip=False, shuffle=False,
                             mean_color=[132.2766, 139.6506, 146.9702], multi_scale=None)
@@ -74,10 +75,11 @@ def model_setup():
     y = model_10.inference(x)
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
-    saver = tf.train.import_meta_graph("../training/alexnet_20200709_040258/checkpoint/model_epoch1.ckpt.meta")
-    saver.restore(sess, "../training/alexnet_20200709_040258/checkpoint/model_epoch1.ckpt")
+    saver = tf.train.import_meta_graph("../training/alexnet_20200709_232305/checkpoint/model_epoch10.ckp\
+t.meta")
+    saver.restore(sess, "../training/alexnet_20200709_232305/checkpoint/model_epoch10.ckpt")
     experiment1(sess,x,y)
 
 if __name__ == "__main__":
-    # model_setup()
-    multi_model_setup()
+    model_setup()
+    #multi_model_setup()
