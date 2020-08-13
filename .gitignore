@@ -5,3 +5,4 @@ cifar-10-batches-py/
 training/
 exp1
 *.npy
+a.out

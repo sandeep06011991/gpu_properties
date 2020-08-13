@@ -12,6 +12,9 @@ int main(){
 	cudaError_t cudaStat;
 	cublasStatus_t stat;    
 	cublasHandle_t handle;
+	cudaEvent_t start, stop;
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
 	int i, j;
 	float* devPtrA;
 	float* devPtrC;
@@ -39,6 +42,7 @@ int main(){
 		printf ("CUBLAS initialization failed\n");
 		return EXIT_FAILURE;   
        	}    
+	cudaEventRecord(start);
 	stat = cublasSetMatrix (M, N, sizeof(*a), a, M, devPtrA, M);
 	if (stat != CUBLAS_STATUS_SUCCESS) {
 		printf ("data download failed");
@@ -64,6 +68,12 @@ int main(){
 
 	stat = cublasGetMatrix( M, N, sizeof(float), devPtrC, M, res, M);
 
+	cudaEventRecord(stop);
+	cudaEventSynchronize(stop);
+	float milliseconds = 0;
+	cudaEventElapsedTime(&milliseconds, start, stop);
+	
+	cout << "Total time" << milliseconds <<"\n";
 	for(int j=1;j <=N; j++){
 		for(int i=1;i<=M;i++){
 			cout << res[IDX2F(i,j,M)] <<" ";

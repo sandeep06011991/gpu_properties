@@ -1,3 +1,6 @@
+# Gpu performance metrics.
+
+
 # Week 1
 
 1. Download cifar10 (DONE)
