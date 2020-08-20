@@ -2,8 +2,8 @@
 # include <cuda_runtime.h>
 # include "cublas_v2.h"
 #include <iostream>
-#define M 5
-#define N 5
+#define M (1<<11)
+#define N (1<<11)
 #define IDX2F(i,j,ld) ((((j)-1)*(ld))+((i)-1))
 using namespace std;
 
@@ -72,14 +72,14 @@ int main(){
 	cudaEventSynchronize(stop);
 	float milliseconds = 0;
 	cudaEventElapsedTime(&milliseconds, start, stop);
-	
-	cout << "Total time" << milliseconds <<"\n";
-	for(int j=1;j <=N; j++){
-		for(int i=1;i<=M;i++){
-			cout << res[IDX2F(i,j,M)] <<" ";
-		}
-		cout <<"\n";
-	}
-	std::cout << "Hello World\n";
+
+//	Same Matrix too 23ms .
+	cout << "Total time" << milliseconds <<"ms \n";
+//	for(int j=1;j <=N; j++){
+//		for(int i=1;i<=M;i++){
+//			cout << res[IDX2F(i,j,M)] <<" ";
+//		}
+//		cout <<"\n";
+//	}
 
 }

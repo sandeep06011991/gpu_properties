@@ -9,7 +9,7 @@
     | 1GB    | 86ms
     | 2GB    | 173ms
 
-The bandwidth we can calculate to be around 11 GB/s
+The bandwidth we can calculate to be around 11 GB/s which is matched by our device specs.
 
 2. Using virtual memory, the time to transfer for varying sizes of memory is as follows.
 The bandwith we calculate is around 3 GB/s. However we have all the advantages of using

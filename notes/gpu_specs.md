@@ -15,5 +15,3 @@ GeForce GTX 1080Ti with the following specifications.
     higher clockspeed and has 10 times slower spped. However the memory clock speed is in the same range of DRAM clockspeed.
 7. 3584 Cude Cores and 28 SMs with warp size of 32.
 
-
-https://docs.nvidia.com/gameworks/content/developertools/desktop/analysis/report/cudaexperiments/kernellevel/achievedoccupancy.htm
